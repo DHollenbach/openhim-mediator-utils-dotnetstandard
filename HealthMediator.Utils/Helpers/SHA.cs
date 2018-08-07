@@ -8,15 +8,25 @@ namespace HealthMediator.Utils.Helpers
 	{
 		public static string EncryptUsingSHA512(string text)
 		{
-			string hex = "";
+			if(text is null)
+			{
+				throw new ArgumentNullException("text");
+			}
+
+			if(string.IsNullOrWhiteSpace(text))
+			{
+				return text;
+			}
+
+			StringBuilder hex = new StringBuilder();
 			SHA512 alg = SHA512Managed.Create();
 			byte[] result = alg.ComputeHash(Encoding.Default.GetBytes(text));
 			string hash = Encoding.UTF8.GetString(result);
 			foreach (byte x in result)
 			{
-				hex += String.Format("{0:x2}", x);
+				hex.Append($"{x:x2}");
 			}
-			return hex;
+			return hex.ToString();
 		}
 	}
 }
