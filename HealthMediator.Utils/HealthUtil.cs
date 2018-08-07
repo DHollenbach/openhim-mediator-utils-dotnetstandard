@@ -21,31 +21,45 @@ namespace HealthMediator.Utils
 		private RestClient restClient;
 		private List<Parameter> authHeaders;
 		private Timer heartbeatTimer = null;
+		private string authSettingSection = "mediatorConfig:openHimAuth";
+		private string coreMediatorSettingsSection = "mediatorConfig:mediatorCore";
+		private string mediatorConfigSection = "mediatorConfig:mediatorSetup";
+
+		public bool IsInitialized { get; protected set; }
 
 		public HealthUtil Initialize(IConfiguration configuration)
 		{
 			var authSettings = new OpenHIMAuth();
-			configuration.GetSection("mediatorConfig:openHimAuth").Bind(authSettings);
+			configuration.GetSection(authSettingSection).Bind(authSettings);
 
 			var coreMediatorSettings = new MediatorCoreConfig();
-			configuration.GetSection("mediatorConfig:mediatorCore").Bind(coreMediatorSettings);
+			configuration.GetSection(coreMediatorSettingsSection).Bind(coreMediatorSettings);
 
 			var mediatorConfig = new MediatorSetup();
-			configuration.GetSection("mediatorConfig:mediatorSetup").Bind(mediatorConfig);
+			configuration.GetSection(mediatorConfigSection).Bind(mediatorConfig);
 
 			this.authSettings = authSettings;
 			this.coreMediatorSettings = coreMediatorSettings;
 			this.mediatorConfig = mediatorConfig;
 
-			restClient = new RestClient(coreMediatorSettings.OpenHimCoreHost);
+			restClient = new RestClient(coreMediatorSettings?.OpenHimCoreHost 
+				?? throw new ArgumentNullException(nameof(coreMediatorSettings.OpenHimCoreHost)));
+
 			restClient.RemoteCertificateValidationCallback +=
 				(sender, certificate, chain, sslPolicyErrors) => authSettings.TrustSelfSigned;
+
+			IsInitialized = true;
 
 			return this;
 		}
 
 		public HealthUtil RegisterMediator()
 		{
+			if(!IsInitialized)
+			{
+				throw new InvalidOperationException("You must call Initialize before calling RegisterMediator.");
+			}
+
 			// Authenticate with the HIM and get Authorization Token
 			authHeaders = GetAuthenticationRequestParameters();
 
