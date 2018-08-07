@@ -74,7 +74,7 @@ namespace HealthMediator.Utils
 			{
 				throw new Exception(
 					MethodBase.GetCurrentMethod()?.Name,
-					result.GetRestResponseException()
+					result.GetFailedRestResponseException()
 				);
 			}
 
@@ -95,7 +95,7 @@ namespace HealthMediator.Utils
 			{
 				throw new Exception(
 					"AuthenticateWithHIM",
-					result.GetRestResponseException()
+					result.GetFailedRestResponseException()
 				);
 			}
 
@@ -177,7 +177,7 @@ namespace HealthMediator.Utils
 			{
 				throw new Exception(
 					MethodBase.GetCurrentMethod()?.Name,
-					result.GetRestResponseException()
+					result.GetFailedRestResponseException()
 				);
 			}
 		}

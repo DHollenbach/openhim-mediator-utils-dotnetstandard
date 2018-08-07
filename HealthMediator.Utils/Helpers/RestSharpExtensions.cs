@@ -5,21 +5,28 @@ namespace HealthMediator.Utils.Helpers
 {
 	public static class RestSharpExtensions
     {
-		public static Exception GetRestResponseException(this IRestResponse result)
+		public static Exception GetFailedRestResponseException(this IRestResponse result)
 		{
 			if(result is null)
 			{
-				return null;
+				throw new ArgumentNullException(nameof(result));
 			}
 
-			var defaultMessage = "not specified";
-			return new Exception(
-					$"ResponseStatus: {result.StatusDescription}.\n" +
-					$"ResponseUri: {result.ResponseUri}.\n" +
-					$"ErrorException: {result.ErrorMessage ?? defaultMessage}.\n" +
-					$"Stacktrace: {result.ErrorException?.StackTrace ?? defaultMessage}.\n" +
-					$"ExceptionType: {result.ErrorException?.GetType()?.Name ?? defaultMessage}."
-				);
+			if (result.IsSuccessful)
+			{
+				return null;
+			}
+			else
+			{
+				var defaultMessage = "not specified";
+				return new Exception(
+						$"ResponseStatus: {result.StatusDescription ?? defaultMessage}.\n" +
+						$"ResponseUri: {result.ResponseUri?.ToString() ?? defaultMessage}.\n" +
+						$"ErrorException: {result.ErrorMessage ?? defaultMessage}.\n" +
+						$"Stacktrace: {result.ErrorException?.StackTrace ?? defaultMessage}.\n" +
+						$"ExceptionType: {result.ErrorException?.GetType()?.Name ?? defaultMessage}."
+					);
+			}
 		}
     }
 }
